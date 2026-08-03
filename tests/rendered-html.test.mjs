@@ -24,9 +24,9 @@ test("server-renders the Agent Chat Cleaner landing page", async () => {
   assert.match(html, /<title>Agent Chat Cleaner — 本地 AI 会话整理工具<\/title>/);
   assert.match(html, /看清楚，再清干净/);
   assert.match(html, /聊天内容不上云/);
-  assert.match(html, /v1\.x 买断/);
-  assert.match(html, /支付宝/);
-  assert.match(html, /微信支付/);
+  assert.match(html, /下载 Windows 版/);
+  assert.match(html, /共享大文件保持只读/);
+  assert.doesNotMatch(html, /¥9\.9|支付宝|微信支付|一次付费/);
   assert.match(html, /og\.png/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/);
 });
@@ -42,15 +42,16 @@ test("ships bilingual, reversible-cleanup source without starter artifacts", asy
 
   assert.match(page, /zh:\s*\{/);
   assert.match(page, /en:\s*\{/);
-  assert.match(page, /payDialog\.current\?\.showModal/);
+  assert.match(page, /AgentChatCleaner-Windows-x64\.exe/);
   assert.match(page, /Move to quarantine/);
   assert.match(page, /移入隔离区/);
   assert.match(layout, /summary_large_image/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.match(plan, /默认只读扫描/);
-  assert.match(plan, /Ed25519 entitlement/);
+  assert.match(plan, /共享大文件只能记录级改写或事务级删除/);
 
   await access(new URL("../public/og.png", import.meta.url));
+  await access(new URL("../public/downloads/AgentChatCleaner-Windows-x64.exe", import.meta.url));
   await assert.rejects(access(new URL("../app/_sites-preview", import.meta.url)));
 });

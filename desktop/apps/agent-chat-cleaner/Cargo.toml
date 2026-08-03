@@ -1,0 +1,11 @@
+[package]
+name = "agent-chat-cleaner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+agent-chat-cleaner-core.workspace = true
+agent-chat-cleaner-quarantine.workspace = true
+agent-chat-cleaner-scanner.workspace = true
+eframe.workspace = true

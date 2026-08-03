@@ -42,3 +42,5 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+/desktop/target/
+/artifacts/*.exe

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Language = "zh" | "en";
 
@@ -10,16 +10,15 @@ const copy = {
       ["功能", "#features"],
       ["工作方式", "#workflow"],
       ["安全", "#safety"],
-      ["价格", "#pricing"],
+      ["下载", "#download"],
     ],
     badge: "为本地 AI 编程 Agent 而生",
     heroTitleA: "会话太多？",
     heroTitleB: "看清楚，再清干净。",
     heroBody:
       "统一整理 Codex、Claude Code 等本地会话。先预览、再隔离、可恢复——你的聊天内容始终留在电脑里。",
-    primaryCta: "获取首发版",
+    primaryCta: "下载 Windows 版",
     secondaryCta: "看看如何工作",
-    priceHint: "首发价 ¥9.9 · v1.x 买断",
     proof: ["聊天内容不上云", "误清理可恢复", "原生 Rust 桌面端"],
     mock: {
       title: "会话空间",
@@ -30,7 +29,7 @@ const copy = {
       filter: "90 天未使用",
       col: ["会话", "最后活动", "空间"],
       rows: [
-        ["支付回调重构", "Codex · 4 个月前", "184 MB"],
+        ["日志清理策略", "Codex · 4 个月前", "184 MB"],
         ["Landing page experiments", "Claude Code · 5 个月前", "92 MB"],
         ["旧版构建排查", "Codex · 7 个月前", "61 MB"],
       ],
@@ -46,7 +45,7 @@ const copy = {
       ["01", "空间一眼看清", "按 Agent、项目、日期和大小聚合，区分逻辑大小与预计可回收空间。"],
       ["02", "聪明但不自作主张", "用安全、平衡或自定义规则找出旧会话；格式未知和运行中的会话自动跳过。"],
       ["03", "先隔离，后清除", "清理默认进入隔离区并保留完整清单。恢复原路径，冲突时绝不静默覆盖。"],
-      ["04", "隐私不是一句口号", "扫描、预览、筛选与恢复都在本机完成。授权服务不接触会话正文和项目路径。"],
+      ["04", "隐私不是一句口号", "扫描、预览、筛选与恢复都在本机完成。应用不需要账号，聊天正文和项目路径不会上传。"],
     ],
     workflowEyebrow: "三步完成",
     workflowTitle: "放心整理，不靠运气",
@@ -75,57 +74,49 @@ const copy = {
       ["误操作恢复", "依赖备份", "内置隔离区"],
       ["空间与规则预览", "需要自己统计", "执行前可见"],
     ],
-    pricingEyebrow: "简单定价",
-    pricingTitle: "一次付费，安心使用",
-    pricingBody: "没有订阅，没有按设备月租，也不会为了授权要求你一直联网。",
-    edition: "首发版",
-    priceUnit: "人民币",
-    priceNote: "v1.x 买断 · 永久使用",
+    downloadEyebrow: "Windows 技术预览",
+    downloadTitle: "现在开始整理",
+    downloadBody: "一个原生 Rust 可执行文件。启动后只读扫描，只有你明确选择并输入确认词时才会把单个会话移入隔离区。",
+    edition: "Windows x64",
+    version: "v0.1.0 · Portable EXE",
     included: [
       "Codex 与 Claude Code 支持",
-      "完整扫描、筛选、隔离与恢复",
-      "Windows 首发，macOS / Linux 跟进",
-      "最多 3 台个人设备激活",
-      "中英文界面",
+      "只读扫描、筛选、隔离与恢复",
+      "活动会话和未知格式自动保护",
+      "共享大文件保持只读，绝不整文件删除",
+      "中文桌面界面",
     ],
-    buy: "¥9.9 获取首发版",
-    coming: "支付通道接入中，开放时仍按首发价",
-    payTitle: "首发购买即将开放",
-    payBody:
-      "支付宝与微信支付需要完成商户签约和服务端回调验签。当前页面不会产生扣款，也不会展示不安全的个人收款码。",
-    payAlipay: "支付宝",
-    payWechat: "微信支付",
-    payStatus: "商户通道准备中",
-    close: "知道了",
+    download: "下载 Agent Chat Cleaner",
+    downloadNote: "Windows 10/11 x64 · 便携版 · 当前未签名",
+    checksum: "查看 SHA-256 校验文件",
     faqEyebrow: "常见问题",
     faqTitle: "清理之前，你可能会问",
     faqs: [
-      ["会上传我的聊天记录吗？", "不会。扫描、筛选、预览、隔离和恢复都在本机完成。授权服务器只处理订单、授权状态和匿名设备摘要。"],
+      ["会上传我的聊天记录吗？", "不会。扫描、筛选、预览、隔离和恢复都在本机完成；应用不需要账号。"],
       ["误删了怎么办？", "默认操作不是永久删除，而是移动到隔离区并保留 7 天。你可以在隔离区恢复到原位置；遇到路径冲突时应用会停下来让你选择。"],
-      ["为什么不是免费脚本？", "脚本很适合熟悉目录和格式的用户。这个产品的价值在于跨 Agent 适配、格式变化保护、运行状态判断、操作预览和可靠恢复。"],
-      ["买断包含未来所有版本吗？", "首发价买断 v1.x，已购版本永久可用并包含 v1 系列更新。未来大版本如果收费，会是可选升级，旧版本不会失效。"],
+      ["和手写脚本有什么不同？", "脚本很适合熟悉目录和格式的用户。这个工具增加了跨 Agent 适配、格式变化保护、运行状态判断、操作预览和可靠恢复。"],
+      ["会直接删除整个会话文件夹吗？", "不会。当前版本只处理经验证且一个文件对应一个会话的 JSONL；共享大文件和数据库保持只读，不会退化成整文件删除。"],
       ["什么时候支持更多 Agent？", "首发先把 Codex 与 Claude Code 的安全边界做扎实，再根据用户需求加入 Cursor、Cline、Roo Code 等适配器。"],
     ],
     finalTitle: "把空间还给电脑，\n把上下文留给自己。",
     finalBody: "轻量、本地、可恢复。为每天和 AI Agent 一起工作的你准备。",
     footerNote: "本产品与 OpenAI、Anthropic 无隶属或背书关系。",
-    footerLinks: ["隐私", "条款", "退款说明"],
+    footerLinks: ["隐私", "条款", "安全"],
   },
   en: {
     nav: [
       ["Features", "#features"],
       ["How it works", "#workflow"],
       ["Safety", "#safety"],
-      ["Pricing", "#pricing"],
+      ["Download", "#download"],
     ],
     badge: "Built for local AI coding agents",
     heroTitleA: "Too many sessions?",
     heroTitleB: "See clearly. Clean safely.",
     heroBody:
       "Tidy local Codex, Claude Code, and other agent sessions in one place. Preview first, quarantine safely, and restore anytime—your chats never leave your computer.",
-    primaryCta: "Get launch edition",
+    primaryCta: "Download for Windows",
     secondaryCta: "See how it works",
-    priceHint: "Launch price ¥9.9 · own v1.x",
     proof: ["No chat uploads", "Recoverable cleanup", "Native Rust desktop app"],
     mock: {
       title: "Session storage",
@@ -152,7 +143,7 @@ const copy = {
       ["01", "See storage clearly", "Group by agent, project, age, and size, with honest estimates for reclaimable disk space."],
       ["02", "Smart, never reckless", "Use safe, balanced, or custom rules. Active and unknown-format sessions are skipped automatically."],
       ["03", "Quarantine before purge", "Cleanup writes a full manifest and moves files to quarantine. Restore without silent overwrites."],
-      ["04", "Privacy by architecture", "Scan, preview, filter, and restore locally. Licensing never touches chat content or project paths."],
+      ["04", "Privacy by architecture", "Scan, preview, filter, and restore locally. No account is required, and chat content or project paths are never uploaded."],
     ],
     workflowEyebrow: "Three simple steps",
     workflowTitle: "Clean with confidence",
@@ -181,47 +172,39 @@ const copy = {
       ["Mistake recovery", "Bring your own backup", "Built-in quarantine"],
       ["Space & rule preview", "Calculate it yourself", "Visible before action"],
     ],
-    pricingEyebrow: "Simple pricing",
-    pricingTitle: "Pay once. Keep your workflow.",
-    pricingBody: "No subscription, no per-device monthly rent, and no always-online license checks.",
-    edition: "Launch edition",
-    priceUnit: "CNY",
-    priceNote: "Own v1.x · use it forever",
+    downloadEyebrow: "Windows technical preview",
+    downloadTitle: "Start organizing now",
+    downloadBody: "One native Rust executable. It scans read-only and moves a session to quarantine only after you select it and type the confirmation phrase.",
+    edition: "Windows x64",
+    version: "v0.1.0 · Portable EXE",
     included: [
       "Codex and Claude Code support",
-      "Full scan, filters, quarantine, and restore",
-      "Windows first; macOS and Linux next",
-      "Activate up to 3 personal devices",
-      "Chinese and English UI",
+      "Read-only scan, filters, quarantine, and restore",
+      "Active and unknown-format sessions are protected",
+      "Shared containers stay read-only; never whole-file deletion",
+      "Chinese desktop interface",
     ],
-    buy: "Get launch edition for ¥9.9",
-    coming: "Payments are being connected; launch pricing is reserved",
-    payTitle: "Launch purchase is coming soon",
-    payBody:
-      "Alipay and WeChat Pay require merchant onboarding and verified server callbacks. This preview cannot charge you and never displays an unsafe personal payment QR code.",
-    payAlipay: "Alipay",
-    payWechat: "WeChat Pay",
-    payStatus: "Merchant channel pending",
-    close: "Got it",
+    download: "Download Agent Chat Cleaner",
+    downloadNote: "Windows 10/11 x64 · portable · currently unsigned",
+    checksum: "View SHA-256 checksum",
     faqEyebrow: "FAQ",
     faqTitle: "Before you clean",
     faqs: [
-      ["Do you upload my chats?", "No. Scanning, filtering, previewing, quarantining, and restoring happen locally. Licensing processes only orders, entitlement status, and an anonymous device digest."],
+      ["Do you upload my chats?", "No. Scanning, filtering, previewing, quarantining, and restoring happen locally, and no account is required."],
       ["What if I clean the wrong session?", "Cleanup moves sessions to quarantine for 7 days by default. Restore them to the original location at any time; path conflicts always require your choice."],
-      ["Why not use a free script?", "Scripts are great when you know every format and folder. The product adds cross-agent adapters, format guards, active-session detection, previews, and reliable recovery."],
-      ["Does the purchase include every future version?", "The launch purchase owns v1.x forever and includes all v1 updates. A future major upgrade may be optional and paid; your existing version will not expire."],
+      ["How is this different from a script?", "Scripts are great when you know every format and folder. This tool adds cross-agent adapters, format guards, active-session detection, previews, and reliable recovery."],
+      ["Can it delete an entire shared container?", "No. This build mutates only verified one-session-per-file JSONL. Shared files and databases remain read-only instead of falling back to whole-file deletion."],
       ["When will more agents be supported?", "The first release focuses on getting Codex and Claude Code safety right. Cursor, Cline, Roo Code, and others follow based on demand."],
     ],
     finalTitle: "Give space back to your machine.\nKeep context in your hands.",
     finalBody: "Lightweight, local, and reversible. Made for people who work with AI agents every day.",
     footerNote: "Not affiliated with or endorsed by OpenAI or Anthropic.",
-    footerLinks: ["Privacy", "Terms", "Refunds"],
+    footerLinks: ["Privacy", "Terms", "Security"],
   },
 } as const;
 
 export default function Home() {
   const [language, setLanguage] = useState<Language>("zh");
-  const payDialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("acc-language") as Language | null;
@@ -260,7 +243,7 @@ export default function Home() {
             <b>/</b>
             <span className={language === "en" ? "active" : ""}>EN</span>
           </button>
-          <a className="header-buy" href="#pricing">{language === "zh" ? "¥9.9 首发" : "¥9.9 launch"}</a>
+          <a className="header-buy" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{language === "zh" ? "下载 Windows 版" : "Download"}</a>
         </div>
       </header>
 
@@ -270,10 +253,9 @@ export default function Home() {
           <h1>{t.heroTitleA}<br /><em>{t.heroTitleB}</em></h1>
           <p className="hero-body">{t.heroBody}</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#pricing">{t.primaryCta}<span>↗</span></a>
+            <a className="button button-primary" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{t.primaryCta}<span>↓</span></a>
             <a className="button button-ghost" href="#workflow">{t.secondaryCta}<span>↓</span></a>
           </div>
-          <p className="price-hint">{t.priceHint}</p>
           <div className="proof-list">
             {t.proof.map((item) => <span key={item}><b>✓</b>{item}</span>)}
           </div>
@@ -399,18 +381,18 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="pricing-section" id="pricing">
-        <div className="pricing-intro">
-          <p className="section-eyebrow light">{t.pricingEyebrow}</p><h2>{t.pricingTitle}</h2><p>{t.pricingBody}</p>
+      <section className="download-section" id="download">
+        <div className="download-intro">
+          <p className="section-eyebrow light">{t.downloadEyebrow}</p><h2>{t.downloadTitle}</h2><p>{t.downloadBody}</p>
         </div>
-        <div className="price-card">
-          <div className="price-card-head"><span>{t.edition}</span><b>{language === "zh" ? "限时" : "LIMITED"}</b></div>
-          <div className="price-line"><sup>¥</sup><strong>9.9</strong><span>{t.priceUnit}</span></div>
-          <p className="price-note">{t.priceNote}</p>
-          <div className="price-divider" />
+        <div className="download-card">
+          <div className="download-card-head"><span>{t.edition}</span><b>RUST</b></div>
+          <div className="version-line"><strong>{t.version}</strong></div>
+          <div className="download-divider" />
           <ul>{t.included.map((item) => <li key={item}><span>✓</span>{item}</li>)}</ul>
-          <button className="button button-buy" type="button" onClick={() => payDialog.current?.showModal()}>{t.buy}<span>↗</span></button>
-          <p className="coming-note"><i />{t.coming}</p>
+          <a className="button button-download" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{t.download}<span>↓</span></a>
+          <p className="download-note"><i />{t.downloadNote}</p>
+          <a className="download-checksum" href="/downloads/AgentChatCleaner-Windows-x64.exe.sha256.txt">{t.checksum}</a>
         </div>
       </section>
 
@@ -432,7 +414,7 @@ export default function Home() {
       <section className="final-cta">
         <div className="final-pattern" />
         <div><h2>{t.finalTitle.split("\n").map((line) => <span key={line}>{line}</span>)}</h2><p>{t.finalBody}</p></div>
-        <a className="button final-button" href="#pricing">{t.primaryCta}<span>↗</span></a>
+        <a className="button final-button" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{t.primaryCta}<span>↓</span></a>
       </section>
 
       <footer>
@@ -441,18 +423,6 @@ export default function Home() {
         <p className="copyright">© 2026 Agent Chat Cleaner</p>
       </footer>
 
-      <dialog className="pay-dialog" ref={payDialog} onClick={(event) => { if (event.target === payDialog.current) payDialog.current?.close(); }}>
-        <div className="pay-sheet">
-          <button className="dialog-close" type="button" onClick={() => payDialog.current?.close()} aria-label={t.close}>×</button>
-          <span className="dialog-mark"><i /><i /><i /></span>
-          <h2>{t.payTitle}</h2><p>{t.payBody}</p>
-          <div className="payment-options">
-            <div><span className="pay-logo alipay-logo">支</span><strong>{t.payAlipay}</strong><small>{t.payStatus}</small></div>
-            <div><span className="pay-logo wechat-logo">微</span><strong>{t.payWechat}</strong><small>{t.payStatus}</small></div>
-          </div>
-          <button className="dialog-ack" type="button" onClick={() => payDialog.current?.close()}>{t.close}</button>
-        </div>
-      </dialog>
     </main>
   );
 }
