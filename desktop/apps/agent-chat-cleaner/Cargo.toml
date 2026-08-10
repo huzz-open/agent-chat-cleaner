@@ -3,9 +3,26 @@ name = "agent-chat-cleaner"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Local, reversible AI coding-agent session cleaner"
+build = "build.rs"
+
+[package.metadata.winresource]
+FileDescription = "Agent Chat Cleaner"
+ProductName = "Agent Chat Cleaner"
+OriginalFilename = "AgentChatCleaner.exe"
+LegalCopyright = "Copyright © 2026 Agent Chat Cleaner"
 
 [dependencies]
 agent-chat-cleaner-core.workspace = true
 agent-chat-cleaner-quarantine.workspace = true
 agent-chat-cleaner-scanner.workspace = true
 eframe.workspace = true
+egui_extras.workspace = true
+dirs.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rfd.workspace = true
+
+[build-dependencies]
+ico = "0.5"
+winresource = "0.1"

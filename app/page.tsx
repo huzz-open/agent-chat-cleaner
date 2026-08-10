@@ -4,425 +4,210 @@ import { useEffect, useState } from "react";
 
 type Language = "zh" | "en";
 
+const DOWNLOAD_URL = "/downloads/AgentChatCleaner-Windows-x64.exe";
+const CHECKSUM_URL = "/downloads/AgentChatCleaner-Windows-x64.exe.sha256.txt";
+const GITHUB_URL = "https://github.com/huzz-open/agent-chat-cleaner";
+
 const copy = {
   zh: {
-    nav: [
-      ["功能", "#features"],
-      ["工作方式", "#workflow"],
-      ["安全", "#safety"],
-      ["下载", "#download"],
-    ],
-    badge: "为本地 AI 编程 Agent 而生",
-    heroTitleA: "会话太多？",
-    heroTitleB: "看清楚，再清干净。",
-    heroBody:
-      "统一整理 Codex、Claude Code 等本地会话。先预览、再隔离、可恢复——你的聊天内容始终留在电脑里。",
+    nav: [["功能", "#features"], ["工作方式", "#workflow"], ["安全", "#safety"], ["下载", "#download"]],
+    github: "GitHub",
+    badge: "开源 · Windows x64 · v0.7.9",
+    heroTitleA: "把散落的 Agent 会话，",
+    heroTitleB: "整理成一张清楚的清单。",
+    heroBody: "统一扫描 Cursor、ChatGPT / Codex 与 Claude Code。按项目、时间和大小找到不再需要的会话，批量处理，也能随时恢复。",
     primaryCta: "下载 Windows 版",
-    secondaryCta: "看看如何工作",
-    proof: ["聊天内容不上云", "误清理可恢复", "原生 Rust 桌面端"],
+    secondaryCta: "查看工作方式",
+    proof: ["纯 Rust 桌面端", "精确到单个会话", "删除进度实时可见"],
     mock: {
-      title: "会话空间",
-      subtitle: "本机扫描完成 · 刚刚",
-      reclaim: "可安全整理",
-      selected: "已选择 28 个会话",
-      action: "移入隔离区",
-      filter: "90 天未使用",
-      col: ["会话", "最后活动", "空间"],
+      menu: ["文件", "选项", "帮助"],
+      sourceLabel: "会话来源：",
+      source: "Cursor",
+      scan: "扫描",
+      existing: "现有会话 622",
+      deleted: "已删除 4",
+      all: "全选",
+      invert: "反选",
+      delete: "删除所选 (28)",
+      search: "搜索任务标题、项目或会话 ID",
+      columns: ["任务标题", "项目", "最后活动", "预估大小", "状态", "操作"],
       rows: [
-        ["日志清理策略", "Codex · 4 个月前", "184 MB"],
-        ["Landing page experiments", "Claude Code · 5 个月前", "92 MB"],
-        ["旧版构建排查", "Codex · 7 个月前", "61 MB"],
+        ["Project startup instructions", "todo_name", "45 分钟前", "88.2 KB", "locked", "删除"],
+        ["修复 API 配置无法提交", "codex-proxy", "3 小时前", "24.6 MB", "ready", "删除"],
+        ["聊天记录清理与恢复设计", "agent-chat-cleaner", "2 天前", "12.4 MB", "active", "删除"],
       ],
-      quarantine: "隔离区保留 7 天",
-      undo: "可随时恢复",
+      progress: "正在处理 18 / 28 个会话",
+      percent: "64%",
+      locked: "已锁定，将在批量操作中保留",
+      ready: "可以删除",
+      active: "正在使用，暂不可删除",
     },
-    strip: "一个轻量桌面端，统一管理散落在不同 Agent 里的本地会话。",
-    featuresEyebrow: "不只是一个删除按钮",
-    featuresTitle: "每一步都让你心里有数",
-    featuresBody:
-      "官方工具擅长管理自己的会话。Agent Chat Cleaner 负责跨工具盘点、筛选和安全清理。",
+    strip: "一个便携 EXE，覆盖你常用的三个 AI 编程工具。",
+    featuresEyebrow: "真正面向会话的清理工具",
+    featuresTitle: "不仅看到占用，更能准确处理",
+    featuresBody: "不同 Agent 的存储方式并不相同。应用分别解析文件、项目记录和共享数据库，在同一个界面里给出一致的操作体验。",
     features: [
-      ["01", "空间一眼看清", "按 Agent、项目、日期和大小聚合，区分逻辑大小与预计可回收空间。"],
-      ["02", "聪明但不自作主张", "用安全、平衡或自定义规则找出旧会话；格式未知和运行中的会话自动跳过。"],
-      ["03", "先隔离，后清除", "清理默认进入隔离区并保留完整清单。恢复原路径，冲突时绝不静默覆盖。"],
-      ["04", "隐私不是一句口号", "扫描、预览、筛选与恢复都在本机完成。应用不需要账号，聊天正文和项目路径不会上传。"],
+      ["01", "三个来源，一个列表", "切换 Cursor、ChatGPT / Codex 和 Claude Code；任务标题、真实项目路径、最后活动与预估大小一目了然。"],
+      ["02", "共享大文件按会话处理", "Cursor 的共享 SQLite 数据库不会被整文件删除。应用只在事务中改写已验证、可明确归属的会话记录。"],
+      ["03", "批量操作不卡住界面", "有限并发处理独立文件，Cursor 事务复用扫描快照；进度、当前阶段和已完成数量持续显示。"],
+      ["04", "删除策略由你决定", "默认保留可恢复副本，也可在设置中关闭。删除后列表立即更新，无需等待一次完整重扫。"],
     ],
     workflowEyebrow: "三步完成",
-    workflowTitle: "放心整理，不靠运气",
+    workflowTitle: "从占用到清理，路径很短",
     workflow: [
-      ["扫描", "只读发现", "自动找到支持的 Agent 数据目录，流式读取，不修改任何内容。"],
-      ["审核", "确认清单", "查看命中规则、最后活动、占用空间和风险状态，再决定整理哪些。"],
-      ["整理", "隔离与恢复", "先移动到隔离区。默认保留 7 天，期间可以一键恢复。"],
+      ["扫描", "识别真实会话", "读取各 Agent 的会话索引、项目路径与存储占用，自动合并重复记录。"],
+      ["筛选", "留下重要内容", "搜索任务或项目，查看置顶、活动、可删除等状态，再勾选需要处理的会话。"],
+      ["处理", "恢复或永久删除", "批量删除时显示完整进度；保留副本的会话可恢复，也可以从已删除列表彻底移除。"],
     ],
-    safetyEyebrow: "安全是产品本身",
-    safetyTitle: "默认拒绝不确定的操作",
-    safetyBody:
-      "清理工具最重要的功能，是知道什么时候不该清理。任何变化、占用或未知格式都会让该条目停在原处。",
+    safetyEyebrow: "谨慎处理共享数据",
+    safetyTitle: "只改变能够证明归属的内容",
+    safetyBody: "删除工具不该靠猜。应用在执行前重新检查来源状态、文件指纹与进程占用；无法确认边界时，操作会被阻止。",
     safetyItems: [
-      ["运行保护", "组合进程、文件占用与最近写入状态，活动会话无法批量操作。"],
-      ["格式保护", "适配器无法确认格式版本时 fail closed，不把“解析失败”当垃圾。"],
-      ["路径保护", "不跟随符号链接和目录联接，每个目标执行前重新校验边界。"],
-      ["完整恢复", "隔离清单记录来源、路径、大小与哈希，执行中断也能安全核对。"],
+      ["置顶保护", "Cursor pinned、Codex 置顶与 Claude Code 明确命名会显示锁定图标，并从批量删除中排除。"],
+      ["活动保护", "Agent 正在运行、文件仍被占用或内容刚刚变化时，对应操作会自动禁用。"],
+      ["事务写入", "Cursor 数据在 SQLite 事务中校验并更新；失败会回滚，不留下处理一半的数据库。"],
+      ["恢复清单", "可恢复删除记录来源、会话 ID 与恢复数据；路径冲突时停止，不会静默覆盖现有内容。"],
     ],
-    compareEyebrow: "为什么不是脚本",
-    compareTitle: "快很重要，可逆更重要",
+    compareEyebrow: "为真实数据结构设计",
+    compareTitle: "比手动找文件更可控",
     compareHeaders: ["能力", "手动 / 脚本", "Agent Chat Cleaner"],
     compareRows: [
-      ["跨 Agent 统一视图", "需要逐个查找", "一个界面"],
-      ["运行中会话保护", "取决于脚本", "默认强制"],
-      ["格式变更保护", "容易失效", "未知即跳过"],
-      ["误操作恢复", "依赖备份", "内置隔离区"],
-      ["空间与规则预览", "需要自己统计", "执行前可见"],
+      ["跨 Agent 会话清单", "逐个目录查找", "统一界面"],
+      ["共享数据库单会话删除", "容易误删整库", "事务级处理"],
+      ["置顶与活动状态", "需要自行判断", "图标提示并保护"],
+      ["批量进度与即时列表更新", "通常不可见", "全程可见"],
+      ["误操作恢复", "依赖额外备份", "按需保留副本"],
     ],
-    downloadEyebrow: "Windows 技术预览",
-    downloadTitle: "现在开始整理",
-    downloadBody: "一个原生 Rust 可执行文件。启动后只读扫描，只有你明确选择并输入确认词时才会把单个会话移入隔离区。",
+    downloadEyebrow: "Windows 便携版",
+    downloadTitle: "下载后直接运行",
+    downloadBody: "无需安装，也不需要额外运行时。首次启动选择数据存储根目录，之后即可扫描与整理会话。",
     edition: "Windows x64",
-    version: "v0.1.0 · Portable EXE",
-    included: [
-      "Codex 与 Claude Code 支持",
-      "只读扫描、筛选、隔离与恢复",
-      "活动会话和未知格式自动保护",
-      "共享大文件保持只读，绝不整文件删除",
-      "中文桌面界面",
-    ],
+    version: "v0.7.9 · Portable EXE",
+    included: ["Cursor、ChatGPT / Codex、Claude Code", "现有 / 已删除筛选与全文搜索", "置顶、活动、可删除等组合状态", "批量进度、恢复与永久删除", "中英文产品官网"],
     download: "下载 Agent Chat Cleaner",
     downloadNote: "Windows 10/11 x64 · 便携版 · 当前未签名",
     checksum: "查看 SHA-256 校验文件",
     faqEyebrow: "常见问题",
-    faqTitle: "清理之前，你可能会问",
+    faqTitle: "使用之前，你可能会问",
     faqs: [
-      ["会上传我的聊天记录吗？", "不会。扫描、筛选、预览、隔离和恢复都在本机完成；应用不需要账号。"],
-      ["误删了怎么办？", "默认操作不是永久删除，而是移动到隔离区并保留 7 天。你可以在隔离区恢复到原位置；遇到路径冲突时应用会停下来让你选择。"],
-      ["和手写脚本有什么不同？", "脚本很适合熟悉目录和格式的用户。这个工具增加了跨 Agent 适配、格式变化保护、运行状态判断、操作预览和可靠恢复。"],
-      ["会直接删除整个会话文件夹吗？", "不会。当前版本只处理经验证且一个文件对应一个会话的 JSONL；共享大文件和数据库保持只读，不会退化成整文件删除。"],
-      ["什么时候支持更多 Agent？", "首发先把 Codex 与 Claude Code 的安全边界做扎实，再根据用户需求加入 Cursor、Cline、Roo Code 等适配器。"],
+      ["Cursor 的 20 多 GB 大文件会怎样处理？", "应用会统计 globalStorage、workspaceStorage 与项目记录的物理占用，但删除单个会话时只修改经过验证且属于该会话的数据，不会删除整个 state.vscdb。"],
+      ["为什么删除后释放空间可能小于预估？", "Cursor 使用共享 SQLite 与内容块，逻辑删除不等于数据库文件立即缩小。界面会区分会话预估与来源总占用，避免把整库大小算给某一条会话。"],
+      ["误删后可以恢复吗？", "可以。默认删除会保留恢复副本；你也可以在设置中关闭该策略，让之后的删除不进入已删除列表。"],
+      ["为什么有些按钮不可用？", "置顶、正在使用、来源变化或关系无法确认的会话会被保护。将鼠标停在状态图标或操作上可以查看具体原因。"],
+      ["Windows 为什么提示未知发布者？", "当前便携版尚未购买代码签名证书，因此 SmartScreen 可能提示未知发布者。你可以用页面提供的 SHA-256 校验下载文件。"],
     ],
-    finalTitle: "把空间还给电脑，\n把上下文留给自己。",
-    finalBody: "轻量、本地、可恢复。为每天和 AI Agent 一起工作的你准备。",
-    footerNote: "本产品与 OpenAI、Anthropic 无隶属或背书关系。",
-    footerLinks: ["隐私", "条款", "安全"],
+    finalTitle: "看清每个会话，\n再决定留下什么。",
+    finalBody: "为 Cursor、ChatGPT / Codex 和 Claude Code 准备的原生会话管理工具。",
+    footerNote: "开源项目，与 OpenAI、Anthropic 或 Cursor 无隶属或背书关系。",
   },
   en: {
-    nav: [
-      ["Features", "#features"],
-      ["How it works", "#workflow"],
-      ["Safety", "#safety"],
-      ["Download", "#download"],
-    ],
-    badge: "Built for local AI coding agents",
-    heroTitleA: "Too many sessions?",
-    heroTitleB: "See clearly. Clean safely.",
-    heroBody:
-      "Tidy local Codex, Claude Code, and other agent sessions in one place. Preview first, quarantine safely, and restore anytime—your chats never leave your computer.",
+    nav: [["Features", "#features"], ["Workflow", "#workflow"], ["Safety", "#safety"], ["Download", "#download"]],
+    github: "GitHub",
+    badge: "Open source · Windows x64 · v0.7.9",
+    heroTitleA: "Turn scattered agent sessions",
+    heroTitleB: "into one clear workspace.",
+    heroBody: "Scan Cursor, ChatGPT / Codex, and Claude Code in one place. Find stale sessions by project, activity, and size—then process them in batches or restore them later.",
     primaryCta: "Download for Windows",
     secondaryCta: "See how it works",
-    proof: ["No chat uploads", "Recoverable cleanup", "Native Rust desktop app"],
+    proof: ["Native Rust desktop app", "Per-session precision", "Live batch progress"],
     mock: {
-      title: "Session storage",
-      subtitle: "Local scan complete · just now",
-      reclaim: "Safe to organize",
-      selected: "28 sessions selected",
-      action: "Move to quarantine",
-      filter: "Unused for 90 days",
-      col: ["Session", "Last active", "Space"],
-      rows: [
-        ["Payment callback refactor", "Codex · 4 months ago", "184 MB"],
-        ["Landing page experiments", "Claude Code · 5 months ago", "92 MB"],
-        ["Legacy build debugging", "Codex · 7 months ago", "61 MB"],
-      ],
-      quarantine: "Quarantine keeps files for 7 days",
-      undo: "Restore anytime",
+      menu: ["File", "Options", "Help"], sourceLabel: "Source:", source: "Cursor", scan: "Scan",
+      existing: "Existing 622", deleted: "Deleted 4", all: "Select all", invert: "Invert", delete: "Delete selected (28)", search: "Search title, project, or session ID",
+      columns: ["Task", "Project", "Last active", "Est. size", "Status", "Actions"],
+      rows: [["Project startup instructions", "todo_name", "45 min ago", "88.2 KB", "locked", "Delete"], ["Fix API configuration submit", "codex-proxy", "3 hours ago", "24.6 MB", "ready", "Delete"], ["Chat cleanup and recovery design", "agent-chat-cleaner", "2 days ago", "12.4 MB", "active", "Delete"]],
+      progress: "Processing 18 / 28 sessions", percent: "64%", locked: "Pinned and protected from bulk actions", ready: "Ready to delete", active: "In use and temporarily protected",
     },
-    strip: "One lightweight desktop app for local sessions scattered across your coding agents.",
-    featuresEyebrow: "More than a delete button",
-    featuresTitle: "Know exactly what happens",
-    featuresBody:
-      "Official tools manage their own sessions. Agent Chat Cleaner gives you one safe workflow across tools.",
-    features: [
-      ["01", "See storage clearly", "Group by agent, project, age, and size, with honest estimates for reclaimable disk space."],
-      ["02", "Smart, never reckless", "Use safe, balanced, or custom rules. Active and unknown-format sessions are skipped automatically."],
-      ["03", "Quarantine before purge", "Cleanup writes a full manifest and moves files to quarantine. Restore without silent overwrites."],
-      ["04", "Privacy by architecture", "Scan, preview, filter, and restore locally. No account is required, and chat content or project paths are never uploaded."],
-    ],
-    workflowEyebrow: "Three simple steps",
-    workflowTitle: "Clean with confidence",
-    workflow: [
-      ["Scan", "Read-only discovery", "Find supported agent data folders and stream metadata without changing a thing."],
-      ["Review", "Confirm the plan", "Check matched rules, last activity, storage, and risk status before taking action."],
-      ["Organize", "Quarantine & restore", "Move to quarantine first. Files stay recoverable for 7 days by default."],
-    ],
-    safetyEyebrow: "Safety is the product",
-    safetyTitle: "Uncertainty means stop",
-    safetyBody:
-      "A cleanup tool must know when not to clean. Changed files, active sessions, and unknown formats stay exactly where they are.",
-    safetyItems: [
-      ["Active-session guard", "Process, file-lock, and recent-write signals prevent active sessions from entering bulk actions."],
-      ["Format guard", "Unknown data versions fail closed. A parse error is never treated as disposable data."],
-      ["Path guard", "Symlinks and junctions are not followed, and every target is revalidated before execution."],
-      ["Complete recovery", "Manifests record source, path, size, and hash so interrupted operations remain auditable."],
-    ],
-    compareEyebrow: "Why not a script?",
-    compareTitle: "Fast matters. Reversible matters more.",
-    compareHeaders: ["Capability", "Manual / script", "Agent Chat Cleaner"],
-    compareRows: [
-      ["Cross-agent overview", "Find each folder", "One workspace"],
-      ["Active session protection", "Depends on script", "Always on"],
-      ["Format change protection", "Brittle", "Unknown means skip"],
-      ["Mistake recovery", "Bring your own backup", "Built-in quarantine"],
-      ["Space & rule preview", "Calculate it yourself", "Visible before action"],
-    ],
-    downloadEyebrow: "Windows technical preview",
-    downloadTitle: "Start organizing now",
-    downloadBody: "One native Rust executable. It scans read-only and moves a session to quarantine only after you select it and type the confirmation phrase.",
-    edition: "Windows x64",
-    version: "v0.1.0 · Portable EXE",
-    included: [
-      "Codex and Claude Code support",
-      "Read-only scan, filters, quarantine, and restore",
-      "Active and unknown-format sessions are protected",
-      "Shared containers stay read-only; never whole-file deletion",
-      "Chinese desktop interface",
-    ],
-    download: "Download Agent Chat Cleaner",
-    downloadNote: "Windows 10/11 x64 · portable · currently unsigned",
-    checksum: "View SHA-256 checksum",
-    faqEyebrow: "FAQ",
-    faqTitle: "Before you clean",
-    faqs: [
-      ["Do you upload my chats?", "No. Scanning, filtering, previewing, quarantining, and restoring happen locally, and no account is required."],
-      ["What if I clean the wrong session?", "Cleanup moves sessions to quarantine for 7 days by default. Restore them to the original location at any time; path conflicts always require your choice."],
-      ["How is this different from a script?", "Scripts are great when you know every format and folder. This tool adds cross-agent adapters, format guards, active-session detection, previews, and reliable recovery."],
-      ["Can it delete an entire shared container?", "No. This build mutates only verified one-session-per-file JSONL. Shared files and databases remain read-only instead of falling back to whole-file deletion."],
-      ["When will more agents be supported?", "The first release focuses on getting Codex and Claude Code safety right. Cursor, Cline, Roo Code, and others follow based on demand."],
-    ],
-    finalTitle: "Give space back to your machine.\nKeep context in your hands.",
-    finalBody: "Lightweight, local, and reversible. Made for people who work with AI agents every day.",
-    footerNote: "Not affiliated with or endorsed by OpenAI or Anthropic.",
-    footerLinks: ["Privacy", "Terms", "Security"],
+    strip: "One portable executable for the three AI coding tools you use most.",
+    featuresEyebrow: "Session cleanup, properly modeled",
+    featuresTitle: "See storage. Act with precision.",
+    featuresBody: "Every agent stores chats differently. Dedicated adapters parse files, project records, and shared databases while keeping the workflow consistent.",
+    features: [["01", "Three sources, one list", "Switch between Cursor, ChatGPT / Codex, and Claude Code with real titles, project paths, activity, and size."], ["02", "Per-session shared database edits", "Cursor's shared SQLite database is never deleted wholesale. Only verified records are changed inside a transaction."], ["03", "Responsive batch operations", "Bounded concurrency handles independent files while Cursor reuses scan snapshots. Stage, progress, and counts stay visible."], ["04", "Choose your deletion policy", "Keep recoverable copies by default, or disable them in settings. Successful rows disappear immediately without a full rescan."]],
+    workflowEyebrow: "Three steps",
+    workflowTitle: "A short path from storage to done",
+    workflow: [["Scan", "Resolve real sessions", "Read each agent's index, project paths, and storage footprint while merging duplicate records."], ["Filter", "Keep what matters", "Search by task or project, review pinned and active states, then select only what you want to process."], ["Process", "Restore or purge", "Watch batch progress. Recover saved sessions later, or permanently remove entries from the deleted list."]],
+    safetyEyebrow: "Careful with shared data",
+    safetyTitle: "Change only what can be attributed",
+    safetyBody: "A cleanup tool should never guess. Source state, fingerprints, and running processes are rechecked before mutation; uncertain boundaries stop the operation.",
+    safetyItems: [["Pinned protection", "Cursor pinned, Codex pinned, and explicitly named Claude sessions show a lock and stay out of bulk deletion."], ["Activity protection", "Actions are disabled while an agent is running, a file is busy, or source data has just changed."], ["Transactional writes", "Cursor updates are verified in a SQLite transaction. Failures roll back instead of leaving a half-edited database."], ["Recovery manifest", "Recoverable deletes record source and session data. Path conflicts stop safely without silent overwrites."]],
+    compareEyebrow: "Built for real storage formats", compareTitle: "More control than hunting through folders", compareHeaders: ["Capability", "Manual / script", "Agent Chat Cleaner"],
+    compareRows: [["Cross-agent session list", "Search every folder", "One interface"], ["Per-session shared DB deletion", "Risk deleting the database", "Transactional"], ["Pinned and active state", "Judge it yourself", "Visible and protected"], ["Batch progress and instant updates", "Usually hidden", "Always visible"], ["Mistake recovery", "Bring your own backup", "Optional recovery copies"]],
+    downloadEyebrow: "Portable for Windows", downloadTitle: "Download and run", downloadBody: "No installer and no extra runtime. Choose a data root on first launch, then scan and organize your sessions.", edition: "Windows x64", version: "v0.7.9 · Portable EXE",
+    included: ["Cursor, ChatGPT / Codex, and Claude Code", "Existing / deleted filters and search", "Combined pinned, active, and deletable states", "Batch progress, recovery, and permanent deletion", "Bilingual product website"],
+    download: "Download Agent Chat Cleaner", downloadNote: "Windows 10/11 x64 · portable · currently unsigned", checksum: "View SHA-256 checksum",
+    faqEyebrow: "FAQ", faqTitle: "Before you start",
+    faqs: [["What happens to Cursor's multi-gigabyte database?", "The app measures physical storage across globalStorage, workspaceStorage, and projects, but a single-session delete changes only verified records for that session. It never removes state.vscdb wholesale."], ["Why can reclaimed space be lower than the estimate?", "Cursor shares SQLite pages and content blocks. A logical delete does not immediately shrink the database, so session estimates and total source storage are shown separately."], ["Can I recover a deleted session?", "Yes. Deletes keep a recovery copy by default. You can disable that setting for future deletions so they do not enter the deleted list."], ["Why are some actions disabled?", "Pinned, active, changed, or uncertain sessions are protected. Hover a status icon or action to see the exact reason."], ["Why does Windows show Unknown publisher?", "The portable build is not code-signed yet, so SmartScreen may warn. Use the published SHA-256 checksum to verify the download."]],
+    finalTitle: "See every session.\nChoose what stays.", finalBody: "A native session manager for Cursor, ChatGPT / Codex, and Claude Code.", footerNote: "Open source. Not affiliated with or endorsed by OpenAI, Anthropic, or Cursor.",
   },
 } as const;
 
+function GithubIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.88c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.55 9.55 0 0 1 12 7.01c.85 0 1.69.11 2.49.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.77c0 .27.18.58.69.48A10 10 0 0 0 12 2.2Z" /></svg>;
+}
+
+function StatusIcon({ type, label }: { type: string; label: string }) {
+  return <span className={`status-icon ${type}`} title={label} aria-label={label}>{type === "locked" ? "▣" : type === "ready" ? "✓" : "◷"}</span>;
+}
+
 export default function Home() {
   const [language, setLanguage] = useState<Language>("zh");
-
   useEffect(() => {
     const saved = window.localStorage.getItem("acc-language") as Language | null;
-    const preferred = saved === "zh" || saved === "en"
-      ? saved
-      : navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en";
+    const preferred = saved === "zh" || saved === "en" ? saved : navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en";
     const frame = window.requestAnimationFrame(() => setLanguage(preferred));
     return () => window.cancelAnimationFrame(frame);
   }, []);
-
   useEffect(() => {
     document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
     window.localStorage.setItem("acc-language", language);
   }, [language]);
-
   const t = copy[language];
 
-  return (
-    <main>
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="Agent Chat Cleaner home">
-          <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
-          <span>Agent Chat Cleaner</span>
-        </a>
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {t.nav.map(([label, href]) => <a key={href} href={href}>{label}</a>)}
-        </nav>
-        <div className="header-actions">
-          <button
-            className="language-toggle"
-            type="button"
-            onClick={() => setLanguage(language === "zh" ? "en" : "zh")}
-            aria-label={language === "zh" ? "Switch to English" : "切换到中文"}
-          >
-            <span className={language === "zh" ? "active" : ""}>中</span>
-            <b>/</b>
-            <span className={language === "en" ? "active" : ""}>EN</span>
-          </button>
-          <a className="header-buy" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{language === "zh" ? "下载 Windows 版" : "Download"}</a>
-        </div>
-      </header>
+  return <main id="top">
+    <header className="site-header">
+      <a className="brand" href="#top" aria-label="Agent Chat Cleaner home"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>Agent Chat Cleaner</span></a>
+      <nav className="desktop-nav" aria-label="Primary navigation">{t.nav.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
+      <div className="header-actions">
+        <a className="github-link" href={GITHUB_URL} target="_blank" rel="noreferrer"><GithubIcon /><span>{t.github}</span></a>
+        <button className="language-toggle" type="button" onClick={() => setLanguage(language === "zh" ? "en" : "zh")} aria-label="Switch language">{language === "zh" ? "EN" : "中"}</button>
+        <a className="button small" href={DOWNLOAD_URL}>{t.primaryCta}</a>
+      </div>
+    </header>
 
-      <section className="hero" id="top">
-        <div className="hero-copy">
-          <div className="eyebrow-pill"><span />{t.badge}</div>
-          <h1>{t.heroTitleA}<br /><em>{t.heroTitleB}</em></h1>
-          <p className="hero-body">{t.heroBody}</p>
-          <div className="hero-actions">
-            <a className="button button-primary" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{t.primaryCta}<span>↓</span></a>
-            <a className="button button-ghost" href="#workflow">{t.secondaryCta}<span>↓</span></a>
+    <section className="hero section-shell">
+      <div className="hero-copy">
+        <span className="eyebrow-pill"><span />{t.badge}</span>
+        <h1>{t.heroTitleA}<br /><em>{t.heroTitleB}</em></h1>
+        <p>{t.heroBody}</p>
+        <div className="hero-actions"><a className="button" href={DOWNLOAD_URL}>{t.primaryCta}<b>↓</b></a><a className="text-link" href="#workflow">{t.secondaryCta}<span>→</span></a></div>
+        <div className="proof-row">{t.proof.map((item) => <span key={item}><i>✓</i>{item}</span>)}</div>
+      </div>
+
+      <div className="product-stage" aria-label="Agent Chat Cleaner application preview">
+        <div className="app-window">
+          <div className="window-title"><div className="window-app"><span className="mini-logo">A</span>Agent Chat Cleaner</div><div className="window-controls"><i>—</i><i>□</i><i>×</i></div></div>
+          <div className="app-menu">{t.mock.menu.map((item) => <span key={item}>{item}</span>)}</div>
+          <div className="app-toolbar"><label>{t.mock.sourceLabel}</label><button>{t.mock.source}<span>⌄</span></button><button className="scan-button">{t.mock.scan}</button></div>
+          <div className="table-tools"><div className="filter-tabs"><button className="active">{t.mock.existing}</button><button>{t.mock.deleted}</button></div><span className="divider" /><button>{t.mock.all}</button><button>{t.mock.invert}</button><button className="delete-selected">{t.mock.delete}</button><div className="mock-search">⌕ <span>{t.mock.search}</span></div></div>
+          <div className="session-table">
+            <div className="table-row table-head"><span>□</span>{t.mock.columns.map((column) => <span key={column}>{column}</span>)}</div>
+            {t.mock.rows.map((row) => <div className="table-row" key={row[0]}><span>□</span><strong title={row[0]}>{row[0]}</strong><span title={row[1]}>{row[1]}</span><span>{row[2]}</span><span className="size">{row[3]}</span><span><StatusIcon type={row[4]} label={row[4] === "locked" ? t.mock.locked : row[4] === "ready" ? t.mock.ready : t.mock.active} /></span><button className={row[4] === "locked" ? "disabled" : ""}>{row[5]}</button></div>)}
           </div>
-          <div className="proof-list">
-            {t.proof.map((item) => <span key={item}><b>✓</b>{item}</span>)}
-          </div>
+          <div className="batch-progress"><div className="progress-copy"><span>{t.mock.progress}</span><strong>{t.mock.percent}</strong></div><div className="progress-track"><i /></div></div>
         </div>
+        <div className="float-card card-a"><span className="float-icon">↻</span><div><strong>{language === "zh" ? "删除后立即更新" : "Instant list updates"}</strong><small>{language === "zh" ? "无需完整重扫" : "No full rescan required"}</small></div></div>
+        <div className="float-card card-b"><span className="float-icon lock">▣</span><div><strong>{language === "zh" ? "重要会话已保护" : "Important sessions protected"}</strong><small>{language === "zh" ? "置顶与活动状态自动识别" : "Pinned and active states detected"}</small></div></div>
+      </div>
+    </section>
 
-        <div className="product-visual" aria-label={language === "zh" ? "产品界面预览" : "Product interface preview"}>
-          <div className="visual-glow" />
-          <div className="app-window">
-            <div className="app-titlebar">
-              <div className="traffic"><i /><i /><i /></div>
-              <div className="app-brand"><span className="mini-mark" /> Agent Chat Cleaner</div>
-              <span className="window-tag">LOCAL</span>
-            </div>
-            <div className="app-layout">
-              <aside className="app-sidebar">
-                <span className="sidebar-label">OVERVIEW</span>
-                <div className="sidebar-item active"><i className="side-icon grid-icon" />{t.mock.title}<b>42</b></div>
-                <div className="sidebar-item"><i className="side-icon archive-icon" />{language === "zh" ? "隔离区" : "Quarantine"}<b>7</b></div>
-                <span className="sidebar-label sources">AGENTS</span>
-                <div className="agent-source"><span className="agent-dot codex">C</span>Codex<b>26</b></div>
-                <div className="agent-source"><span className="agent-dot claude">A</span>Claude Code<b>16</b></div>
-                <div className="sidebar-safe"><i>✓</i><div><strong>{language === "zh" ? "本地模式" : "Local mode"}</strong><small>{language === "zh" ? "内容从不上传" : "Content never uploads"}</small></div></div>
-              </aside>
-              <div className="app-content">
-                <div className="content-head">
-                  <div><h3>{t.mock.title}</h3><p>{t.mock.subtitle}</p></div>
-                  <button type="button">↻</button>
-                </div>
-                <div className="space-card">
-                  <div><span>{t.mock.reclaim}</span><strong>1.24 <small>GB</small></strong></div>
-                  <div className="donut"><span>68%</span></div>
-                  <div className="space-legend"><i /><span>Codex <b>824 MB</b></span><i /><span>Claude Code <b>416 MB</b></span></div>
-                </div>
-                <div className="table-toolbar">
-                  <div className="filter-chip"><span>◷</span>{t.mock.filter}<b>×</b></div>
-                  <div className="search-box">⌕ <span>{language === "zh" ? "搜索会话" : "Search sessions"}</span></div>
-                </div>
-                <div className="session-table">
-                  <div className="table-row table-header"><span><i className="checkbox checked" />{t.mock.col[0]}</span><span>{t.mock.col[1]}</span><span>{t.mock.col[2]}</span></div>
-                  {t.mock.rows.map((row, index) => (
-                    <div className="table-row" key={row[0]}>
-                      <span><i className={`checkbox ${index < 2 ? "checked" : ""}`}>{index < 2 ? "✓" : ""}</i><span className={`file-icon tone-${index}`}>▤</span><strong>{row[0]}</strong></span>
-                      <span>{row[1]}</span><span>{row[2]}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="selection-bar">
-                  <div><span className="shield-icon">✓</span><p><strong>{t.mock.selected}</strong><small>{t.mock.quarantine} · {t.mock.undo}</small></p></div>
-                  <button type="button">{t.mock.action}<span>→</span></button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="floating-note note-top"><span>✓</span><div><strong>{language === "zh" ? "3 个活动会话已保护" : "3 active sessions protected"}</strong><small>{language === "zh" ? "不会进入批量操作" : "Excluded from bulk actions"}</small></div></div>
-          <div className="floating-note note-bottom"><span>↶</span><div><strong>{language === "zh" ? "随时撤销" : "Undo anytime"}</strong><small>{language === "zh" ? "隔离区完整保留原路径" : "Original paths are preserved"}</small></div></div>
-        </div>
-      </section>
+    <div className="support-strip"><div className="agent-logos"><span>CURSOR</span><span>ChatGPT / CODEX</span><span>CLAUDE CODE</span></div><p>{t.strip}</p></div>
 
-      <div className="trust-strip"><span className="strip-mark" />{t.strip}<span className="strip-mark" /></div>
-
-      <section className="section features-section" id="features">
-        <div className="section-heading split-heading">
-          <div><p className="section-eyebrow">{t.featuresEyebrow}</p><h2>{t.featuresTitle}</h2></div>
-          <p>{t.featuresBody}</p>
-        </div>
-        <div className="feature-grid">
-          {t.features.map(([number, title, body], index) => (
-            <article className={`feature-card feature-${index + 1}`} key={number}>
-              <div className="feature-top"><span>{number}</span><i className={`feature-symbol symbol-${index + 1}`} /></div>
-              <h3>{title}</h3><p>{body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section workflow-section" id="workflow">
-        <div className="section-heading centered">
-          <p className="section-eyebrow">{t.workflowEyebrow}</p><h2>{t.workflowTitle}</h2>
-        </div>
-        <div className="workflow-grid">
-          {t.workflow.map(([kicker, title, body], index) => (
-            <article className="workflow-step" key={kicker}>
-              <div className="step-number">0{index + 1}</div>
-              <div className={`step-illustration step-${index + 1}`}>
-                <div className="step-orb"><span>{index === 0 ? "⌕" : index === 1 ? "✓" : "↶"}</span></div>
-                {index === 0 && <><i className="scan-line" /><b className="scan-dot one" /><b className="scan-dot two" /><b className="scan-dot three" /></>}
-                {index === 1 && <><i className="review-line line-one" /><i className="review-line line-two" /><i className="review-line line-three" /></>}
-                {index === 2 && <><i className="restore-arrow" /><b className="restore-box" /></>}
-              </div>
-              <p className="step-kicker">{kicker}</p><h3>{title}</h3><p className="step-copy">{body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="safety-section" id="safety">
-        <div className="safety-inner">
-          <div className="safety-copy">
-            <p className="section-eyebrow light">{t.safetyEyebrow}</p><h2>{t.safetyTitle}</h2><p>{t.safetyBody}</p>
-            <div className="local-chip"><span className="pulse-dot" />{language === "zh" ? "100% 本机处理" : "100% on-device"}</div>
-          </div>
-          <div className="safety-list">
-            {t.safetyItems.map(([title, body], index) => (
-              <article key={title}><span className="safety-number">0{index + 1}</span><div><h3>{title}</h3><p>{body}</p></div><i>✓</i></article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section compare-section">
-        <div className="section-heading centered narrow">
-          <p className="section-eyebrow">{t.compareEyebrow}</p><h2>{t.compareTitle}</h2>
-        </div>
-        <div className="compare-table" role="table">
-          <div className="compare-row compare-head" role="row">
-            {t.compareHeaders.map((item, index) => <span key={item} className={index === 2 ? "highlight" : ""}>{index === 2 && <i className="mini-mark" />}{item}</span>)}
-          </div>
-          {t.compareRows.map((row) => (
-            <div className="compare-row" role="row" key={row[0]}>
-              <strong>{row[0]}</strong><span className="muted-cell"><i>—</i>{row[1]}</span><span className="good-cell"><i>✓</i>{row[2]}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="download-section" id="download">
-        <div className="download-intro">
-          <p className="section-eyebrow light">{t.downloadEyebrow}</p><h2>{t.downloadTitle}</h2><p>{t.downloadBody}</p>
-        </div>
-        <div className="download-card">
-          <div className="download-card-head"><span>{t.edition}</span><b>RUST</b></div>
-          <div className="version-line"><strong>{t.version}</strong></div>
-          <div className="download-divider" />
-          <ul>{t.included.map((item) => <li key={item}><span>✓</span>{item}</li>)}</ul>
-          <a className="button button-download" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{t.download}<span>↓</span></a>
-          <p className="download-note"><i />{t.downloadNote}</p>
-          <a className="download-checksum" href="/downloads/AgentChatCleaner-Windows-x64.exe.sha256.txt">{t.checksum}</a>
-        </div>
-      </section>
-
-      <section className="section faq-section" id="faq">
-        <div className="section-heading faq-heading">
-          <div><p className="section-eyebrow">{t.faqEyebrow}</p><h2>{t.faqTitle}</h2></div>
-          <div className="faq-mark" aria-hidden="true">?</div>
-        </div>
-        <div className="faq-list">
-          {t.faqs.map(([question, answer], index) => (
-            <details key={question} open={index === 0}>
-              <summary><span>0{index + 1}</span><strong>{question}</strong><i>+</i></summary>
-              <p>{answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      <section className="final-cta">
-        <div className="final-pattern" />
-        <div><h2>{t.finalTitle.split("\n").map((line) => <span key={line}>{line}</span>)}</h2><p>{t.finalBody}</p></div>
-        <a className="button final-button" href="/downloads/AgentChatCleaner-Windows-x64.exe" download>{t.primaryCta}<span>↓</span></a>
-      </section>
-
-      <footer>
-        <div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>Agent Chat Cleaner</span></a><p>{t.footerNote}</p></div>
-        <div className="footer-links">{t.footerLinks.map((item) => <a href="#faq" key={item}>{item}</a>)}</div>
-        <p className="copyright">© 2026 Agent Chat Cleaner</p>
-      </footer>
-
-    </main>
-  );
+    <section id="features" className="content-section section-shell"><div className="section-intro"><span className="section-kicker">{t.featuresEyebrow}</span><h2>{t.featuresTitle}</h2><p>{t.featuresBody}</p></div><div className="feature-grid">{t.features.map(([number, title, body]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{body}</p></article>)}</div></section>
+    <section id="workflow" className="workflow-section"><div className="section-shell"><div className="section-intro centered"><span className="section-kicker">{t.workflowEyebrow}</span><h2>{t.workflowTitle}</h2></div><div className="workflow-grid">{t.workflow.map(([title, subtitle, body], index) => <article key={title}><div className="step-number">0{index + 1}</div><div className="step-line" /><span>{title}</span><h3>{subtitle}</h3><p>{body}</p></article>)}</div></div></section>
+    <section id="safety" className="safety-section section-shell"><div className="safety-copy"><span className="section-kicker">{t.safetyEyebrow}</span><h2>{t.safetyTitle}</h2><p>{t.safetyBody}</p><div className="safety-seal"><span>✓</span><div><strong>{language === "zh" ? "边界不明确时停止" : "Stops on uncertainty"}</strong><small>{language === "zh" ? "每次写入前重新校验" : "Revalidated before every write"}</small></div></div></div><div className="safety-list">{t.safetyItems.map(([title, body], index) => <article key={title}><span>{["▣", "◷", "↻", "⌁"][index]}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}</div></section>
+    <section className="compare-section"><div className="section-shell"><div className="section-intro centered"><span className="section-kicker">{t.compareEyebrow}</span><h2>{t.compareTitle}</h2></div><div className="compare-table"><div className="compare-row compare-head">{t.compareHeaders.map((item) => <span key={item}>{item}</span>)}</div>{t.compareRows.map((row) => <div className="compare-row" key={row[0]}>{row.map((cell, index) => <span key={cell} className={index === 2 ? "accent-cell" : ""}>{index === 2 && <i>✓</i>}{cell}</span>)}</div>)}</div></div></section>
+    <section id="download" className="download-section section-shell"><div className="download-card"><div className="download-copy"><span className="section-kicker">{t.downloadEyebrow}</span><h2>{t.downloadTitle}</h2><p>{t.downloadBody}</p><ul>{t.included.map((item) => <li key={item}><span>✓</span>{item}</li>)}</ul></div><div className="download-box"><div className="windows-mark">⊞</div><strong>{t.edition}</strong><span>{t.version}</span><a className="button download-button" href={DOWNLOAD_URL}>{t.download}<b>↓</b></a><small>{t.downloadNote}</small><a className="checksum-link" href={CHECKSUM_URL}>{t.checksum}</a></div></div></section>
+    <section className="faq-section section-shell"><div className="section-intro centered"><span className="section-kicker">{t.faqEyebrow}</span><h2>{t.faqTitle}</h2></div><div className="faq-list">{t.faqs.map(([question, answer]) => <details key={question}><summary>{question}<span>＋</span></summary><p>{answer}</p></details>)}</div></section>
+    <section className="final-cta"><div className="section-shell"><div><h2>{t.finalTitle.split("\n").map((line) => <span key={line}>{line}</span>)}</h2><p>{t.finalBody}</p></div><div className="final-actions"><a className="button light" href={DOWNLOAD_URL}>{t.primaryCta}<b>↓</b></a><a className="github-final" href={GITHUB_URL} target="_blank" rel="noreferrer"><GithubIcon />{t.github}</a></div></div></section>
+    <footer><div className="section-shell"><a className="brand footer-brand" href="#top"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><span>Agent Chat Cleaner</span></a><p>{t.footerNote}</p><a className="footer-github" href={GITHUB_URL} target="_blank" rel="noreferrer"><GithubIcon />huzz-open/agent-chat-cleaner</a></div></footer>
+  </main>;
 }

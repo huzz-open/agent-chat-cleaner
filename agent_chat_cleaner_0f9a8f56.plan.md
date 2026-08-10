@@ -1,11 +1,11 @@
 # Agent Chat Cleaner 产品设计与风险审查
 
-> 状态：工程规格 v1.2（Rust 可恢复清理原型已实现，公开发布前仍需签名与真机验证）
+> 状态：工程规格 v2.2（真实任务标题、桌面端置顶保护、批量执行进度、可配置永久删除、增量列表刷新与 Cursor 会话级 SQLite 安全子集已实现，公开发布前仍需签名与真机验证）
 > 工作名：Agent Chat Cleaner
-> 核心定位：一款本地优先、可预览、可恢复的 AI 编程 Agent 会话整理工具。
+> 核心定位：一款可预览、可批量清理、可恢复的 AI 编程 Agent 会话整理工具。
 
 > [!IMPORTANT]
-> 截至 2026-08-03，仓库内已有 `desktop/` Cargo workspace、egui/eframe 桌面端、Codex/Claude Code 首行元数据扫描器、独占会话文件的隔离/恢复实现与 Windows x64 portable EXE。当前原型**不支持共享 JSONL/SQLite 的写入，也不提供永久删除**；这些格式保持只读，避免把共享大文件整体删除。官网中的示例数字仍是产品展示，不代表扫描结果。
+> 截至 2026-08-04，仓库内已有 `desktop/` Cargo workspace、egui/eframe 桌面端、ChatGPT/Codex、Claude Code 与 Cursor 扫描器、独占会话文件的隔离/恢复，以及 Windows x64 portable EXE。各 Agent 的真实项目路径分别取自 Cursor `workspaceIdentifier`、Claude Code JSONL `cwd` 与 Codex `session_meta.payload.cwd`；项目列显示真实名称并通过 hover 展示完整路径，不从连字符编码目录猜测。ChatGPT/Codex 的任务标题以 `.codex/session_index.jsonl` 中最新 `thread_name` 为准，搜索与列表使用同一个标题；Claude Code 按 `customTitle`、`aiTitle`、首条提示词的顺序确定标题。状态列用可叠加图标表达保留锁定、可删除、正在使用、关系未知、路径阻止与可恢复。删除、彻底删除及执行进度弹窗统一采用居中内容、居中操作组和一致间距，设置与首次启动等表单保持左对齐。批量执行持续上报阶段、完成数、百分比和当前会话；Codex/Claude Code 的独占文件按 2 路可恢复复制或 4 路永久删除进行有界并发，Cursor 因共享 SQLite 保持串行写入，但批次只读取一次 workspace 置顶集合和初始进程状态，每 32 条复核进程并复用最新数据库/WAL 指纹。删除事务提交后，成功项会立即从内存列表移除，不再强制完整扫描；Codex/Claude Code 的独占文件空间统计同步增量调整，Cursor 只刷新相关 `state.vscdb` 与 WAL 指纹，物理总量按需手动扫描校准。恢复后立即回插会话；独占源文件恢复原 mtime，避免被短期活动保护误判，因此可直接再次删除。设置默认保留恢复副本，也允许用户明确关闭；关闭后新删除项永久删除且不进入“已删除”，Cursor 仍以临时可校验 payload 完成安全事务，提交后立即清除正文 payload，只保留无正文审计 manifest。仅当本地重建失败时才回退完整扫描。Cursor 的 pinned ID 实际按工作区保存在 `workspaceStorage/*/state.vscdb` 的 `cursor/pinnedComposers` 中，扫描器会跨工作区合并，删除事务前还会再次读取；ChatGPT/Codex 桌面端的侧边栏置顶实际保存在 `.codex-global-state.json` 顶层 `pinned-thread-ids`，同时兼容 SQLite `threads.is_pinned`，扫描后新增置顶也会在隔离前重新检查；Claude Code 不存在普通会话 pin 字段，因此用户通过 rename 写入的 `customTitle` 作为命名保留信号并自动锁定。关于窗口只展示标准软件元数据，顶部只保留列表区域的一份会话数和空间汇总。Cursor 的 global SQLite header 与 `.cursor/projects` transcript 按 `composerId` 合并为一条逻辑会话；物理占用覆盖 globalStorage、workspaceStorage 和 projects。Cursor 完全退出后，可把经 schema 指纹验证的 header、composerData、bubble、checkpoint、代码上下文和独占 transcript 写入单会话 SQLite 恢复 payload，再用 `BEGIN IMMEDIATE` 事务逐键、逐值复核删除；共享 `agentKv` CAS、`composer.content`、自动备份、搜索数据库与 VACUUM 不计为立即释放空间。Claude `projects` 当前不存在共享会话大库；程序下载与插件缓存不计入会话空间。Codex 的大 JSONL 是独占会话文件，可按会话隔离；`logs_2.sqlite` 与 `state_5.sqlite` 不按单会话归算或改写。首次启动要求确认隔离根目录，永久删除只能作用于明确选择的会话。
 
 ### 当前仓库状态
 
@@ -120,7 +120,7 @@
 - 最近是否持续增长。
 - session 元数据是否标记 active。
 
-任何信号不确定，都标记“正在使用或状态未知”，禁止操作。UI 不能允许用户批量绕过；如需强制操作，只能在单条详情中二次输入确认。
+任何信号不确定，都标记“正在使用或状态未知”，禁止操作。UI 不能允许用户批量绕过；当前版本不提供强制操作入口。
 
 ### 3.3 把共享大文件误当成单个 session 删除
 
@@ -568,14 +568,13 @@ unknown_side_effects = empty
 
 ### 4.8 桌面 UI 页面与状态
 
-v1 桌面端必须具备这些真实页面，而不是官网 mockup：
+v1 桌面端使用顶部菜单，不设置常驻侧边栏。会话列表按 ChatGPT/Codex、Claude Code、Cursor 标签切换，默认进入“现有会话”；已删除记录、隔离存储设置和关于信息通过顶部菜单进入：
 
 1. **首次启动**：语言、隐私承诺、扫描范围说明。
-2. **Overview**：Agent 数、session 数、逻辑空间、上次扫描时间。
-3. **Sessions**：虚拟列表、排序、筛选、多选、详情抽屉。
+2. **Sessions / Existing**：虚拟列表、筛选、多选、可拖动列宽、任务标题完整 hover，以及逐行恢复/删除/彻底删除按钮；按钮依据状态启用。批量删除/恢复位于列表上方的固定工具栏，不能依赖滚动到底部才能操作。
 4. **Review plan**：选中的 session、每项删除粒度（独占文件/共享 JSONL/SQLite/API）、共享容器中不会被触碰的 session 数、blocked 条目、预计空间、隔离期限。
-5. **Quarantine**：恢复、查看 manifest、单独永久清除。
-6. **Settings**：语言、隔离目录、保留天数、更新、诊断。
+5. **Sessions / Deleted**：作为会话菜单中的恢复视图，不在主导航中强调“隔离区”；支持恢复和单独永久清除。
+6. **Settings**：按 Agent 设置隔离存储位置、语言、保留天数、更新、诊断。
 7. **About**：版本、commit、许可证、数据目录、安全联系入口。
 
 应用状态只能通过领域命令变化：
@@ -588,11 +587,11 @@ UiIntent → Command → app-core use case → Event → AppState → egui rende
 
 ### 4.9 配置与本地数据路径
 
-应用不得把自己的数据写进 Codex 或 Claude Code 目录。默认位置：
+应用不得把自己的数据写进任何 Agent 数据目录。Windows 默认优先选择非系统盘，并按 Agent 分目录；只有首次执行删除时才创建隔离目录。没有可用非系统盘时回退到应用本地数据目录：
 
 | 平台 | 配置/状态 | 隔离区 |
 | --- | --- | --- |
-| Windows | `%LOCALAPPDATA%\AgentChatCleaner\` | `%LOCALAPPDATA%\AgentChatCleaner\quarantine\` |
+| Windows | `%LOCALAPPDATA%\AgentChatCleaner\settings.json` | `<非系统盘>:\AgentChatCleanerData\{chatgpt-codex,claude-code,cursor}\quarantine\`；无非系统盘时回退 `%LOCALAPPDATA%` |
 | macOS | `~/Library/Application Support/AgentChatCleaner/` | 同目录下 `quarantine/` |
 | Linux | `$XDG_STATE_HOME/agent-chat-cleaner/`，否则 `~/.local/state/...` | 同目录下 `quarantine/` |
 
@@ -878,7 +877,7 @@ Cloudflare 静态官网
 安全边界：
 
 - 只允许经验证的单会话独占文件进入选择集。
-- 支持明确确认后的可恢复隔离与无覆盖恢复；不提供永久删除。
+- 支持明确确认后的可恢复隔离、无覆盖恢复，以及已提交单条隔离 payload 的二次确认永久删除。
 - 共享 JSONL、SQLite、未知格式、活动文件和 `subagents` 保持只读。
 
 ### P1：可恢复清理 MVP（预计 2–3 周）
@@ -903,7 +902,7 @@ Cloudflare 静态官网
 安全边界：
 
 - 默认只移动到隔离区。
-- 永久清除仍用 feature flag 关闭。
+- 永久清除只开放已提交隔离 payload 的单条操作；共享容器和源目录没有永久删除入口。
 
 ### P1.5：永久清除安全审计（预计 1 周）
 

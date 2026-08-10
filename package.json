@@ -1,7 +1,13 @@
 {
   "name": "agent-chat-cleaner-site",
-  "version": "0.1.0",
+  "version": "0.7.9",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huzz-open/agent-chat-cleaner.git"
+  },
+  "homepage": "https://agent-chat-cleaner-site.huzzcj.workers.dev",
   "engines": {
     "node": ">=22.13.0"
   },
@@ -11,6 +17,8 @@
     "start": "vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "deploy": "vinext deploy",
+    "deploy:dry-run": "vinext deploy --dry-run",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {

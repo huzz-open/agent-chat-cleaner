@@ -1,25 +1,25 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://agent-chat-cleaner.huzzcj.chatgpt.site";
+const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://agent-chat-cleaner-site.huzzcj.workers.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicSiteUrl),
-  title: "Agent Chat Cleaner — 本地 AI 会话整理工具",
-  description: "统一扫描、预览、隔离并恢复 Codex、Claude Code 等本地 AI Agent 会话。原生 Rust，聊天内容不上云。",
+  title: "Agent Chat Cleaner — AI Agent 会话管理工具",
+  description: "统一扫描、筛选、删除并恢复 Cursor、ChatGPT / Codex 与 Claude Code 会话。纯 Rust Windows 桌面应用。",
   applicationName: "Agent Chat Cleaner",
-  keywords: ["Codex", "Claude Code", "AI agent", "session cleaner", "Rust", "本地会话", "清理工具"],
+  keywords: ["Cursor", "ChatGPT", "Codex", "Claude Code", "AI agent", "session cleaner", "Rust", "会话管理"],
   openGraph: {
-    title: "Agent Chat Cleaner — 看清楚，再清干净",
-    description: "本地优先、可恢复的 AI 编程 Agent 会话整理工具。",
+    title: "Agent Chat Cleaner — 看清每个会话",
+    description: "面向 Cursor、ChatGPT / Codex 和 Claude Code 的原生会话管理工具。",
     type: "website",
     siteName: "Agent Chat Cleaner",
-    images: [{ url: "/og.png", width: 1732, height: 908, alt: "Agent Chat Cleaner — 看清楚，再清干净" }],
+    images: [{ url: "/og.png", width: 1732, height: 908, alt: "Agent Chat Cleaner — 看清每个会话" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Agent Chat Cleaner",
-    description: "See clearly. Clean safely. Local AI agent session cleanup.",
+    description: "A native session manager for Cursor, ChatGPT / Codex, and Claude Code.",
     images: ["/og.png"],
   },
 };
