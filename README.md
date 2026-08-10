@@ -60,7 +60,9 @@ cargo build --manifest-path desktop/Cargo.toml --release --target x86_64-pc-wind
 
 ## 官网
 
-线上地址：<https://agent-chat-cleaner-site.huzzcj.workers.dev>
+线上地址：<https://acc.huzz.top>
+
+备用地址：<https://agent-chat-cleaner-site.huzzcj.workers.dev>
 
 ```powershell
 npm install

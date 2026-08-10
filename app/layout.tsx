@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://agent-chat-cleaner-site.huzzcj.workers.dev";
+const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://acc.huzz.top";
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicSiteUrl),
